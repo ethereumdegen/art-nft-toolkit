@@ -115,6 +115,12 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         artProjects[projectCount].metadataURI = _metadataURI;
     }
 
+
+    /*
+     A 'secret message' is a _nonce concatenated to a _secretCode and this is what we can give to people. our front end can split it up 
+
+    */
+
     function mintToken(
         uint256 _projectId,
         uint256 _nonce,
@@ -144,10 +150,11 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         require(secretCodeHasBeenUsed(_secretCode)==false,"Code already used");
         usedSecretCodeHashes[keccak256(_secretCode)] = true;
 
+        //make sure secret code ECrecovery of hash(projectId, nonce) == artist admin address  
         require(_validateSecretCode( artProjects[_projectId].artistAddress, _projectId, _nonce, _secretCode ), "Secret code invalid");
 
 
-        //make sure secret code ECrecovery of hash(projectId, nonce) == artist admin address  
+        
         super._safeMint(_to, _tokenId);
        
     }
