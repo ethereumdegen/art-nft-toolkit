@@ -41,7 +41,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     // projectId => ArtProject
     mapping(uint256 => ArtProject) public artProjects;
-    mapping(bytes32 => bool) public usedSecretCodeHashes;
+    mapping(bytes32 => bool) public usedSignatureHashes;
 
 
     //see how artblocks uses name and sym
@@ -117,11 +117,9 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
 
     /*
-     A 'secret message' is a _nonce concatenated to a _secretCode and this is what we can give to people. our front end can split it up 
+     A 'secret message' is a _project id and _nonce concatenated to a _secretCode and this is what we can give to people. our method will decode 
 
     */
-
-
 
 
     function mintTokenFromSecretMessage( 
@@ -130,19 +128,19 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     {   
         uint256 _projectId;
         uint256 _nonce;
-        bytes memory _secretCode;
-        (_projectId, _nonce, _secretCode) = abi.decode(_secretMessage, (uint256, uint256, bytes));
-        mintTokenTo(msg.sender,_projectId,_nonce,_secretCode);
+        bytes memory _signature; //secret code 
+        (_projectId, _nonce, _signature) = abi.decode(_secretMessage, (uint256, uint256, bytes));
+        mintTokenTo(msg.sender,_projectId,_nonce,_signature);
     }
 
 
     function mintToken(
         uint256 _projectId,
         uint256 _nonce,
-        bytes memory _secretCode
+        bytes memory _signature
     ) public
     {   
-       mintTokenTo(msg.sender,_projectId,_nonce,_secretCode);
+       mintTokenTo(msg.sender,_projectId,_nonce,_signature);
     }
 
 
@@ -153,7 +151,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         address _to,
         uint256 _projectId,
         uint256 _nonce,
-        bytes memory _secretCode
+        bytes memory _signature
     ) public
     {   
         uint256 _tokenId = (_projectId * MAX_PROJECT_QUANTITY) + artProjects[_projectId].mintedCount;
@@ -162,11 +160,11 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
         require(artProjects[_projectId].mintedCount <= artProjects[_projectId].totalSupply, "Total supply has been minted for this project.");
 
-        require(secretCodeHasBeenUsed(_secretCode)==false,"Code already used");
-        usedSecretCodeHashes[keccak256(_secretCode)] = true;
+        require(signatureHasBeenUsed(_signature)==false,"Code already used");
+        usedSignatureHashes[keccak256(_signature)] = true;
 
         //make sure secret code ECrecovery of hash(projectId, nonce) == artist admin address  
-        require(_validateSecretCode( artProjects[_projectId].artistAddress, _projectId, _nonce, _secretCode ), "Secret code invalid");
+        require(_validateSecretCode( artProjects[_projectId].artistAddress, _projectId, _nonce, _signature ), "Signature invalid");
 
 
         
@@ -174,10 +172,10 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
        
     }
 
-    function secretCodeHasBeenUsed(
-        bytes memory _secretCode
+    function signatureHasBeenUsed(
+        bytes memory _signature
     ) public view returns (bool){
-        return usedSecretCodeHashes[keccak256(_secretCode)];
+        return usedSignatureHashes[keccak256(_signature)];
     }
 
     function _validateSecretCode(
