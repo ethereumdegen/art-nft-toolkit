@@ -12,7 +12,7 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.
 
 /*
 
-This contract should be deployed as a proxy but without a proxyadmin contract (see hardhat deploy doc )
+This contract should be deployed as a proxy 
 
 */
 
@@ -41,12 +41,15 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     // projectId => ArtProject
     mapping(uint256 => ArtProject) public artProjects;
+    mapping(bytes32 => bool) public usedSecretCodeHashes;
 
 
     //see how artblocks uses name and sym
-     constructor () public
+     constructor (string memory _name, string memory _symbol) public
         ERC721Upgradeable()
     {
+        __Ownable_init();
+        __ERC721_init(_name,_symbol);
 
         contractName = "UndergroundArt";
         contractVersion = "1.0";  
@@ -99,14 +102,28 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
             mintedCount : 0
         });
 
-        
-
         emit DefinedProject(projectCount, _artistAddress, _totalSupply);
 
         projectCount +=1;
 
-
     }
+
+    function modifyProjectMetadata(
+        uint256 projectId,
+        string memory _metadataURI
+    ) public onlyOwner {
+        artProjects[projectCount].metadataURI = _metadataURI;
+    }
+
+    function mintToken(
+        uint256 _projectId,
+        uint256 _nonce,
+        bytes memory _secretCode
+    ) public
+    {   
+       mintTokenTo(msg.sender,_projectId,_nonce,_secretCode);
+    }
+
 
    /**
     * Custom accessor to create a unique token
@@ -124,14 +141,22 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
         require(artProjects[_projectId].mintedCount <= artProjects[_projectId].totalSupply, "Total supply has been minted for this project.");
 
+        require(secretCodeHasBeenUsed(_secretCode)==false,"Code already used");
+        usedSecretCodeHashes[keccak256(_secretCode)] = true;
 
-        require(_validateSecretCode( artProjects[_projectId].artistAddress, _projectId, _nonce, _secretCode ));
+        require(_validateSecretCode( artProjects[_projectId].artistAddress, _projectId, _nonce, _secretCode ), "Secret code invalid");
+
 
         //make sure secret code ECrecovery of hash(projectId, nonce) == artist admin address  
         super._safeMint(_to, _tokenId);
        
     }
 
+    function secretCodeHasBeenUsed(
+        bytes memory _secretCode
+    ) public view returns (bool){
+        return usedSecretCodeHashes[keccak256(_secretCode)];
+    }
 
     function _validateSecretCode(
         address signerAddress,
