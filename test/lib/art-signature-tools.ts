@@ -68,7 +68,7 @@ function getDomainData(chainId: number, verifyingContractAddress:string): Domain
     return domainData
   }
 
-export function generateArtSignature(wallet:Wallet, messageInputs: SignatureInputs, chainId: number, contractAddress:string) : {success:boolean,data?:string,error?:string} {
+export function generateArtSignature(wallet:Wallet, messageInputs: SignatureInputs, chainId: number, contractAddress:string) : {success:boolean,data?: {secretMessage:string, signature:string, projectId: number, nonce: number}  ,error?:string} {
 
     const domainData = getDomainData(chainId, contractAddress)
 
@@ -113,8 +113,34 @@ export function generateArtSignature(wallet:Wallet, messageInputs: SignatureInpu
       return { success: false, error: 'Signature mismatch.' }
     }
   
-    const craSignature = toRpcSig(sig.v, sig.r, sig.s)
+    const signature = toRpcSig(sig.v, sig.r, sig.s)
+
+    const abiCoder = new utils.AbiCoder()
+
+    const secretMessage = abiCoder.encode(
+        ['uint16','uint16','bytes'],
+        [
+            messageInputs.projectId,
+            messageInputs.nonce,
+            signature
+        ]
+      )
   
     //const final_list: CraResponse = Object.assign({}, signature, input);
-    return { success: true, data: craSignature }
+    return { success: true, data: 
+        {
+
+        projectId:messageInputs.projectId,
+        nonce:messageInputs.nonce,
+        signature,
+        secretMessage
+      }
+    } 
+}
+
+export function generateRandomNonce() : number {
+
+
+    return Math.floor(Math.random()*65535)
+
 }
