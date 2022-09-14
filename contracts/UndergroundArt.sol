@@ -32,6 +32,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         string metadataURI;
         uint16 totalSupply;  //must be less than or equal to MAX_PROJECT_QUANTITY   
         uint16 mintedCount;
+        uint256 mintPrice;
     }   
 
     event DefinedProject(uint16 indexed projectId, address artistAddress, uint16 totalSupply);
@@ -104,14 +105,16 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     function defineProject (
         address _artistAddress,      
         string memory _metadataURI,
-        uint16 _totalSupply
+        uint16 _totalSupply,
+        uint256 _mintPrice
     )  public onlyOwnerOrSpecificArtist(_artistAddress) {
 
         artProjects[projectCount] = ArtProject({
             artistAddress: _artistAddress,
             metadataURI: _metadataURI,
             totalSupply: _totalSupply,
-            mintedCount : 0
+            mintedCount : 0,
+            mintPrice: _mintPrice
         });
 
         emit DefinedProject(projectCount, _artistAddress, _totalSupply);
@@ -126,6 +129,14 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     ) public onlyOwnerOrSpecificArtist(artProjects[projectId].artistAddress) {
         artProjects[projectId].metadataURI = _metadataURI;
     }
+
+    function modifyProjectMintPrice(
+        uint16 projectId,
+        uint256 _mintPrice
+    ) public onlyOwnerOrSpecificArtist(artProjects[projectId].artistAddress) {
+        artProjects[projectId].mintPrice = _mintPrice;
+    }
+
 
     function setArtistAllowlist(address artistAddress, bool enabled)
     public onlyOwner
@@ -143,7 +154,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     function mintTokenFromSecretMessage( 
         bytes memory _secretMessage
-    ) public
+    ) public payable
     {
 
         require (_secretMessage.length == 69);
@@ -162,7 +173,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         _signature = BytesLib.slice( _secretMessage, 4, 65 );
           
       
-        mintTokenTo(msg.sender,_projectId,_nonce,_signature);
+        _mintTokenTo(msg.sender,_projectId,_nonce,_signature);
     }
 
 
@@ -170,21 +181,21 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         uint16 _projectId,
         uint16 _nonce,
         bytes memory _signature
-    ) public
+    ) public payable
     {   
-       mintTokenTo(msg.sender,_projectId,_nonce,_signature);
+       _mintTokenTo(msg.sender,_projectId,_nonce,_signature);
     }
 
 
    /**
     * Custom accessor to create a unique token
     */
-    function mintTokenTo(
+    function _mintTokenTo(
         address _to,
         uint16 _projectId,
         uint16 _nonce,
         bytes memory _signature
-    ) public
+    ) internal 
     {   
         uint256 _tokenId = (_projectId * MAX_PROJECT_QUANTITY) + artProjects[_projectId].mintedCount;
 
@@ -197,10 +208,15 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
         //make sure secret code ECrecovery of hash(projectId, nonce) == artist admin address  
         require(_validateSecretCode( artProjects[_projectId].artistAddress, _projectId, _nonce, _signature ), "Signature invalid");
-
-
         
+       
         super._safeMint(_to, _tokenId);
+
+
+        //perform this call at the end to mitigate re-entrancy exploits 
+        require(msg.value == artProjects[_projectId].mintPrice, "Invalid payment for mint");
+        payable(artProjects[_projectId].artistAddress).transfer(msg.value); //send funds to artist
+        
        
     }
 

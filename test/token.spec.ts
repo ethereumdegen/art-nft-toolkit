@@ -78,11 +78,13 @@ describe('Upgrade Contract', () => {
       let artistAddress = await artist.getAddress()
       let metadataURI = "ipfs://"
       let totalSupply = 10
+      let mintPrice = 0
 
       await artContract.connect(deployer).defineProject(
         artistAddress,
         metadataURI,
-        totalSupply
+        totalSupply,
+        mintPrice
       )
 
       let projectData = await artContract.artProjects(0);
