@@ -35,7 +35,10 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         uint256 mintPrice;
     }   
 
-    event DefinedProject(uint16 indexed projectId, address artistAddress, uint16 totalSupply);
+    event DefinedProject(uint16 indexed projectId, address artistAddress, uint16 totalSupply, uint256 mintPrice);
+    event UpdatedMintPrice(uint16 indexed projectId, uint256 mintPrice);
+    event UpdatedMetadataURI(uint16 indexed projectId);
+    
     event AllowlistedArtist(address indexed artist, bool enabled);
    
     // projectId => ArtProject
@@ -117,7 +120,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
             mintPrice: _mintPrice
         });
 
-        emit DefinedProject(projectCount, _artistAddress, _totalSupply);
+        emit DefinedProject(projectCount, _artistAddress, _totalSupply, _mintPrice);
 
         projectCount +=1;
 
@@ -128,6 +131,9 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         string memory _metadataURI
     ) public onlyOwnerOrSpecificArtist(artProjects[projectId].artistAddress) {
         artProjects[projectId].metadataURI = _metadataURI;
+    
+        emit UpdatedMetadataURI(projectId);
+    
     }
 
     function modifyProjectMintPrice(
@@ -135,6 +141,9 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         uint256 _mintPrice
     ) public onlyOwnerOrSpecificArtist(artProjects[projectId].artistAddress) {
         artProjects[projectId].mintPrice = _mintPrice;
+
+        emit UpdatedMintPrice(projectId, _mintPrice);
+    
     }
 
 
