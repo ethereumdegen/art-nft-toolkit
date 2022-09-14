@@ -37,7 +37,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     }   
 
     event DefinedProject(uint16 indexed projectId, address artistAddress, uint16 totalSupply);
-
+    event AllowlistedArtist(address indexed artist, bool enabled);
    
     // projectId => ArtProject
     mapping(uint16 => ArtProject) public artProjects;
@@ -45,6 +45,18 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
  
     uint16 projectCount;
+
+    mapping(address => bool) public allowlistedArtists;
+
+
+
+
+    modifier onlyOwnerOrArtist(address artist){
+         require(_msgSender() == owner() || (  allowlistedArtists[_msgSender()] && _msgSender() == artist) , "Ownable: caller is not the owner");
+        _;
+    }
+
+
 
 
     //see how artblocks uses name and sym
@@ -111,7 +123,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         address _artistAddress,      
         string memory _metadataURI,
         uint16 _totalSupply
-    )  public onlyOwner {
+    )  public onlyOwnerOrArtist(_artistAddress) {
 
         artProjects[projectCount] = ArtProject({
             artistAddress: _artistAddress,
@@ -129,8 +141,16 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     function modifyProjectMetadata(
         uint16 projectId,
         string memory _metadataURI
-    ) public onlyOwner {
+    ) public onlyOwnerOrArtist(artProjects[projectCount].artistAddress) {
         artProjects[projectCount].metadataURI = _metadataURI;
+    }
+
+    function setArtistAllowlist(address artistAddress, bool enabled)
+    public onlyOwner
+    {
+        allowlistedArtists[artistAddress] = enabled;
+
+        emit AllowlistedArtist(artistAddress, enabled);
     }
 
 
