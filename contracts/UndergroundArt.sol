@@ -49,7 +49,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
 
 
-    modifier onlyOwnerOrArtist(address artist){
+    modifier onlyOwnerOrSpecificArtist(address artist){
          require(_msgSender() == owner() || (  allowlistedArtists[_msgSender()] && _msgSender() == artist) , "Ownable: caller is not the owner");
         _;
     }
@@ -105,7 +105,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         address _artistAddress,      
         string memory _metadataURI,
         uint16 _totalSupply
-    )  public onlyOwnerOrArtist(_artistAddress) {
+    )  public onlyOwnerOrSpecificArtist(_artistAddress) {
 
         artProjects[projectCount] = ArtProject({
             artistAddress: _artistAddress,
@@ -123,7 +123,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     function modifyProjectMetadata(
         uint16 projectId,
         string memory _metadataURI
-    ) public onlyOwnerOrArtist(artProjects[projectId].artistAddress) {
+    ) public onlyOwnerOrSpecificArtist(artProjects[projectId].artistAddress) {
         artProjects[projectId].metadataURI = _metadataURI;
     }
 
