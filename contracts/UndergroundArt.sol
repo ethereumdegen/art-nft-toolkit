@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 // Libraries
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 
-
+import "hardhat/console.sol";
 /*
 
 This contract should be deployed as a proxy 
@@ -19,37 +19,37 @@ This contract should be deployed as a proxy
 contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     //each nft tokenid will be  [this constant * artProjectId + tokenId]
-    uint256 immutable MAX_PROJECT_QUANTITY = 10000;
+    uint16 immutable MAX_PROJECT_QUANTITY = 10000;
 
     bytes32 public immutable DOMAIN_SEPARATOR;
 
-    string public contractName;
-    string public contractVersion; //used for offchain signature domain separator
-
-
+    address public immutable IMPLEMENTATION_ADDRESS;
 
     struct ArtProject {
         address artistAddress;
         string metadataURI;
-        uint256 totalSupply;  //must be less than or equal to MAX_PROJECT_QUANTITY   
-        uint256 mintedCount;
+        uint16 totalSupply;  //must be less than or equal to MAX_PROJECT_QUANTITY   
+        uint16 mintedCount;
     }   
 
-    event DefinedProject(uint256 indexed projectId, address artistAddress, uint256 totalSupply);
+    event DefinedProject(uint16 indexed projectId, address artistAddress, uint16 totalSupply);
 
-    uint256 projectCount;
-
+   
     // projectId => ArtProject
-    mapping(uint256 => ArtProject) public artProjects;
+    mapping(uint16 => ArtProject) public artProjects;
     mapping(bytes32 => bool) public usedSignatureHashes;
+
+ 
+    uint16 projectCount;
 
 
     //see how artblocks uses name and sym
      constructor () public
         ERC721Upgradeable()
     {
-    
-        DOMAIN_SEPARATOR = makeDomainSeparator(contractName, contractVersion);
+         
+        IMPLEMENTATION_ADDRESS = address(this);
+        DOMAIN_SEPARATOR = makeDomainSeparator("UndergroundArt", "1.0");
 
 
     }
@@ -57,15 +57,19 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     function initialize() public initializer {
 
-        contractName = "UndergroundArt";
-        contractVersion = "1.0";
 
         __Ownable_init();
         
-        __ERC721_init(contractName,"UA");
+        __ERC721_init("UndergroundArt","UA");
 
     }
 
+
+    function getImplementationAddress() public view returns (address){
+        return IMPLEMENTATION_ADDRESS;
+    }
+
+ 
 
     /**
      * @notice Creates the domain separator for EIP712 signature verification.
@@ -81,6 +85,8 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         assembly {
             chainId := chainid()
         }
+ 
+
         return
             keccak256(
                 abi.encode(
@@ -100,7 +106,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     function defineProject (
         address _artistAddress,      
         string memory _metadataURI,
-        uint256 _totalSupply
+        uint16 _totalSupply
     )  public onlyOwner {
 
         artProjects[projectCount] = ArtProject({
@@ -117,7 +123,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     }
 
     function modifyProjectMetadata(
-        uint256 projectId,
+        uint16 projectId,
         string memory _metadataURI
     ) public onlyOwner {
         artProjects[projectCount].metadataURI = _metadataURI;
@@ -134,17 +140,17 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         bytes calldata _secretMessage
     ) public
     {   
-        uint256 _projectId;
-        uint256 _nonce;
+        uint16 _projectId;
+        uint16 _nonce;
         bytes memory _signature; //secret code 
-        (_projectId, _nonce, _signature) = abi.decode(_secretMessage, (uint256, uint256, bytes));
+        (_projectId, _nonce, _signature) = abi.decode(_secretMessage, (uint16, uint16, bytes));
         mintTokenTo(msg.sender,_projectId,_nonce,_signature);
     }
 
 
     function mintToken(
-        uint256 _projectId,
-        uint256 _nonce,
+        uint16 _projectId,
+        uint16 _nonce,
         bytes memory _signature
     ) public
     {   
@@ -157,8 +163,8 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     */
     function mintTokenTo(
         address _to,
-        uint256 _projectId,
-        uint256 _nonce,
+        uint16 _projectId,
+        uint16 _nonce,
         bytes memory _signature
     ) public
     {   
@@ -188,17 +194,12 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     function _validateSecretCode(
         address signerAddress,
-        uint256 projectId,
-        uint256 nonce,
+        uint16 projectId,
+        uint16 nonce,
         bytes memory signature
     ) internal view returns (bool) {
 
-        bytes32 typeHash = keccak256( 
-                                abi.encode( keccak256(
-                                    "inputs(uint256 projectId, uint256 nonce)"
-                                ), 
-                                projectId, 
-                                nonce ) );
+        bytes32 typeHash = getTypeHash(projectId,nonce);
 
         bytes32 dataHash = keccak256(
             abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, typeHash)
@@ -210,6 +211,14 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     }
 
 
+    function getTypeHash(uint16 projectId, uint16 nonce) public view returns (bytes32){
+        return keccak256( abi.encode( keccak256(
+                        "inputs(uint16 projectId,uint16 nonce)"
+                        ), 
+                        projectId, 
+                        nonce ) );
+    }
+
      /**
      * @dev Returns an URI for a given token ID
      * Throws if the token ID does not exist. May return an empty string.
@@ -218,7 +227,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     function tokenURI(uint256 tokenId) public override view returns (string memory) {
         require(_exists(tokenId));
 
-        uint256 projectId = getProjectIdFromTokenId(tokenId);
+        uint16 projectId = getProjectIdFromTokenId(tokenId);
 
         return artProjects[projectId].metadataURI;
     }
@@ -226,9 +235,9 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
 
   
-    function getProjectIdFromTokenId(uint256 tokenId) public view returns (uint){
+    function getProjectIdFromTokenId(uint256 tokenId) public view returns (uint16){
           //test me thoroughly !
-          return (tokenId/MAX_PROJECT_QUANTITY);
+          return uint16(tokenId/MAX_PROJECT_QUANTITY);
     }
 
 

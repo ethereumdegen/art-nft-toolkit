@@ -225,7 +225,7 @@ export default <HardhatUserConfig>{
       default: 0, // here this will by default take the first account as deployer
     },
     funder: 1,
-    miner: 2 
+    minter: 2 
    
   },
 

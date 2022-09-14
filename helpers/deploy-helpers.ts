@@ -32,6 +32,8 @@ export const deploy = async <C extends Contract>(
 
   const { deployer } = await getNamedAccounts()
 
+  console.log('deployer is ',deployer)
+
   // If marked as mock, prepend "Mock" to the contract name
   const contractName = `${args.contract}${args.mock ? 'Mock' : ''}`
   const contractDeployName = args.name ?? args.contract

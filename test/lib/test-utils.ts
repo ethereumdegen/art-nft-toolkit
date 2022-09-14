@@ -1,7 +1,7 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { Wallet } from 'ethers'
 import hre, { ethers } from 'hardhat'
-import { getFunds } from '../helpers/get-funds'
+import { getFunds } from '../../helpers/get-funds'
 
 export async function createAndFundRandomWallet(provider: any): Promise<Wallet> {
  
@@ -16,4 +16,13 @@ export async function createAndFundRandomWallet(provider: any): Promise<Wallet> 
   })
 
   return wallet
+}
+
+
+export function getNetworkNameFromChainId(chainId: number): string {
+  if (chainId == 4) return 'rinkeby'
+  if (chainId == 5) return 'goerli'
+  if (chainId == 137) return 'polygon'
+
+  return 'mainnet'
 }
