@@ -12,7 +12,8 @@ export type GenerateSignaturesInput = {
     projectId: number,    
     chainId:number,
     implementationContractAddress:string,
-    quantity: number 
+    quantity: number,
+    startNonce: number 
 
 } 
 
@@ -23,7 +24,8 @@ const generationConfig:GenerateSignaturesInput = {
     projectId: 0, 
     chainId: 5,
     implementationContractAddress: "0x50D75C1BC6a1cE35002C9f92D0AF4B3684aa6B74",
-    quantity: 10
+    quantity: 10,
+    startNonce: 0 
 
 }
 
@@ -52,7 +54,7 @@ export function generateSignatures(args:string[]){
     for(let i=0;i<input.quantity;i++){
 
         let projectId = input.projectId
-        let nonce = generateRandomNonce();
+        let nonce = input.startNonce + i ;
 
         let implementationContractAddress = input.implementationContractAddress
         let chainId = input.chainId
