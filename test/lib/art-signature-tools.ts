@@ -115,9 +115,8 @@ export function generateArtSignature(wallet:Wallet, messageInputs: SignatureInpu
   
     const signature = toRpcSig(sig.v, sig.r, sig.s)
 
-    const abiCoder = new utils.AbiCoder()
-
-    const secretMessage = abiCoder.encode(
+    console.log({signature})
+    const secretMessage = utils.solidityPack(
         ['uint16','uint16','bytes'],
         [
             messageInputs.projectId,
@@ -125,7 +124,9 @@ export function generateArtSignature(wallet:Wallet, messageInputs: SignatureInpu
             signature
         ]
       )
+
   
+    
     //const final_list: CraResponse = Object.assign({}, signature, input);
     return { success: true, data: 
         {

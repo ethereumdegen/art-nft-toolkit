@@ -5,7 +5,7 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-
+import "./BytesLib.sol";
 // Libraries
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 
@@ -14,7 +14,12 @@ import "hardhat/console.sol";
 
 This contract should be deployed as a proxy 
 
+
+
+
 */
+
+
 
 contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
@@ -137,13 +142,29 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
 
     function mintTokenFromSecretMessage( 
-        bytes calldata _secretMessage
+        bytes memory _secretMessage
     ) public
-    {   
+    {
+
+        require (_secretMessage.length == 69);
+
         uint16 _projectId;
         uint16 _nonce;
+    
         bytes memory _signature; //secret code 
-        (_projectId, _nonce, _signature) = abi.decode(_secretMessage, (uint16, uint16, bytes));
+      
+
+        assembly {
+        _projectId := mload(add(_secretMessage, 0x02))
+        _nonce := mload(add(_secretMessage, 0x04))           
+        }
+
+        _signature = BytesLib.slice( _secretMessage, 4, 65 );
+        
+        console.logUint(_projectId);
+        console.logUint(_nonce); 
+        console.logBytes(_signature);      
+      
         mintTokenTo(msg.sender,_projectId,_nonce,_signature);
     }
 

@@ -99,9 +99,7 @@ describe('Upgrade Contract', () => {
       let chainId = hre.network.config.chainId
       let implementationContractAddress =  await artContract.getImplementationAddress()
 
-
-      console.log({implementationContractAddress})
-
+ 
       if(!chainId){
         throw new Error("ChainId undefined")
       }
@@ -125,13 +123,10 @@ describe('Upgrade Contract', () => {
 
 
       let typeHash = await artContract.getTypeHash(projectId,nonce);
-      console.log({typeHash})
-
+      
 
       let domainSeparator = await artContract['DOMAIN_SEPARATOR']();
-      console.log({domainSeparator})
-
-
+      
       let mint = await artContract.connect(minter).mintToken(
         projectId,
         nonce,
@@ -176,13 +171,18 @@ describe('Upgrade Contract', () => {
 
 
       let typeHash = await artContract.getTypeHash(projectId,nonce);
-      console.log({typeHash})
-
-
+      
       let domainSeparator = await artContract['DOMAIN_SEPARATOR']();
-      console.log({domainSeparator})
+       
+      console.log({secretMessage})
+
+     /* const abiCoder = new utils.AbiCoder()
 
     
+      let secretMessageUnpacked =   abiCoder.decode(['uint16','uint16','bytes'],secretMessage)
+
+
+      console.log({secretMessageUnpacked})*/
 
       let mint = await artContract.connect(minter).mintTokenFromSecretMessage(
        secretMessage
