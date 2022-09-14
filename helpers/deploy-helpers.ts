@@ -32,8 +32,6 @@ export const deploy = async <C extends Contract>(
 
   const { deployer } = await getNamedAccounts()
 
-  console.log('deployer is ',deployer)
-
   // If marked as mock, prepend "Mock" to the contract name
   const contractName = `${args.contract}${args.mock ? 'Mock' : ''}`
   const contractDeployName = args.name ?? args.contract
@@ -49,6 +47,8 @@ export const deploy = async <C extends Contract>(
       from: deployer,
     })
     contractAddress = result.address
+    
+    
   } else {
     result = { ...existingContract, newlyDeployed: false }
     contractAddress = existingContract.address
@@ -69,7 +69,26 @@ export const deploy = async <C extends Contract>(
   return contract
 }
 
- 
+export interface DiamondExecuteArgs<F, A> {
+  methodName: F
+  args: A
+}
+
+type FacetConfig = Omit<DeployArgs, 'hre'>
+export type Facets = Array<string | FacetConfig>
+
+export interface DeployDiamondArgs<
+  C extends Contract,
+  F = string | undefined,
+  A = F extends keyof C['functions'] ? Parameters<C[F]> : undefined
+> extends CommonDeployArgs {
+  name: string
+  facets: Facets
+  owner?: string
+  execute?: F extends keyof C['functions']
+    ? DiamondExecuteArgs<F, A>
+    : undefined
+}
  
 
 interface DeployResultArgs {

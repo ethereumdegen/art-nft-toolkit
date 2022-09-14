@@ -1,8 +1,8 @@
  
  ## TODO 
 
- Write tests for minting these 
+EXAMPLE 
+
+https://artredemption.com/redeem/0x0000000961d6ee43e6ae830d9fe3d4aaa45e90a7b61d4b20103b469dc437a4918cea58d77f2f8f57dd10fce68f9e2c648422412740744d1befb08ae8d3181b6517dfc1621c
 
 
- Write a script (helper lib) for generating the signatures (like cra server) 
- 

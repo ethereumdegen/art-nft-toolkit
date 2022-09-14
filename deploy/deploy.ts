@@ -16,7 +16,6 @@ const deployOptions: DeployFunction = async (hre) => {
   console.log('********** Deploying **********', { indent: 1 })
   console.log('')
  
-  
    
   const artContract = await deploy({
     contract: 'UndergroundArt',
