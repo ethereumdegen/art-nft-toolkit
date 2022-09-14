@@ -141,8 +141,8 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     function modifyProjectMetadata(
         uint16 projectId,
         string memory _metadataURI
-    ) public onlyOwnerOrArtist(artProjects[projectCount].artistAddress) {
-        artProjects[projectCount].metadataURI = _metadataURI;
+    ) public onlyOwnerOrArtist(artProjects[projectId].artistAddress) {
+        artProjects[projectId].metadataURI = _metadataURI;
     }
 
     function setArtistAllowlist(address artistAddress, bool enabled)
