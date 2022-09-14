@@ -45,16 +45,24 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
 
     //see how artblocks uses name and sym
-     constructor (string memory _name, string memory _symbol) public
+     constructor () public
         ERC721Upgradeable()
     {
-        __Ownable_init();
-        __ERC721_init(_name,_symbol);
+    
+        DOMAIN_SEPARATOR = makeDomainSeparator(contractName, contractVersion);
+
+
+    }
+
+
+    function initialize() public initializer {
 
         contractName = "UndergroundArt";
-        contractVersion = "1.0";  
+        contractVersion = "1.0";
 
-        DOMAIN_SEPARATOR = makeDomainSeparator(contractName, contractVersion);
+        __Ownable_init();
+        
+        __ERC721_init(contractName,"UA");
 
     }
 

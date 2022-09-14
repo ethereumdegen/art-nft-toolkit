@@ -4,11 +4,10 @@ import chaiAsPromised from 'chai-as-promised'
 import { BigNumber, Contract,   Signer, Wallet } from 'ethers'
 import hre, { ethers } from 'hardhat'
 //import { deploy } from 'helpers/deploy-helpers'
-import { XBitcoinTokenTest, XBitsToken } from '../generated/typechain'
-import { getPayspecInvoiceUUID, PayspecInvoice , ETH_ADDRESS} from 'payspec-js'
+import { UndergroundArt } from '../generated/typechain'
 import { deploy } from '../helpers/deploy-helpers'
-import { createAndFundRandomWallet } from './test-utils'
-import { ApprovalInputs, DomainData, signPermitApproval } from './lib/EIP2616SDK'
+import { createAndFundRandomWallet } from './test-utils' 
+
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -19,8 +18,7 @@ const {   deployments } = hre
 interface SetupOptions {}
 
 interface SetupReturn {
-  originalTokenContract: XBitcoinTokenTest
-  upgradeTokenContract: XBitsToken
+  artContract: UndergroundArt 
 }
 
 const setup = deployments.createFixture<SetupReturn, SetupOptions>(
@@ -31,17 +29,14 @@ const setup = deployments.createFixture<SetupReturn, SetupOptions>(
       keepExistingDeployments: false,
     })
 
-    const originalTokenContract = await hre.contracts
-    .get<XBitcoinTokenTest>('_0xBitcoinTokenTest')
-    const upgradeTokenContract = await hre.contracts
-    .get<XBitsToken>('xBitsToken')
+    const artContract = await hre.contracts
+    .get<UndergroundArt>('UndergroundArt')
    
         
       
 
     return {
-      originalTokenContract,
-      upgradeTokenContract
+      artContract
     }
   }
 )
@@ -50,28 +45,26 @@ const setup = deployments.createFixture<SetupReturn, SetupOptions>(
 
 describe('Upgrade Contract', () => {
 
-  let originalTokenContract: XBitcoinTokenTest
-  let upgradeTokenContract: XBitcoinTokenV2
+  let artContract: UndergroundArt 
 
  
-  let miner: Wallet 
-  let permitter: Wallet  
+  let artist: Wallet 
+  let minter: Wallet  
 
   before(async () => {
 
 
-    miner = await createAndFundRandomWallet( ethers.provider )
-    permitter = await createAndFundRandomWallet( ethers.provider )
+    artist = await createAndFundRandomWallet( ethers.provider )
+    minter = await createAndFundRandomWallet( ethers.provider )
 
-    let minerEth = await miner.getBalance()
+    //let minerEth = await miner.getBalance()
 
    
     const result = await setup()
-    originalTokenContract = result.originalTokenContract
-    upgradeTokenContract = result.upgradeTokenContract 
- 
+    artContract = result.artContract
 
-  })
+
+     })
 
 
   

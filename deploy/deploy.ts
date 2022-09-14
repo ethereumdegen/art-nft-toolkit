@@ -18,20 +18,22 @@ const deployOptions: DeployFunction = async (hre) => {
  
 
    
-  const originalToken = await deploy({
-    contract: '_0xBitcoinTokenTest',
+  const artContract = await deploy({
+    contract: 'UndergroundArt',
     args: [ ],
     skipIfAlreadyDeployed: false,
+    proxy: {
+      proxyContract: 'OpenZeppelinTransparentProxy',
+      execute: {
+        init: {
+          methodName: 'initialize',
+          args: [],
+        },
+      },
+    },
     hre, 
   })
-
-  const upgradeToken = await deploy({
-    contract: 'xBitsToken',
-    args: [ originalToken.address ],
-    skipIfAlreadyDeployed: false,
-    hre, 
-  })
-
+ 
 
 
 }
