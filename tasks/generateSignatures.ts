@@ -4,6 +4,8 @@ import { generateArtSignature, generateRandomNonce } from "../lib/art-signature-
 require('dotenv').config()
 const ARTIST_PRIVATE_KEY = process.env.ARTIST_PRIVATE_KEY
  
+import FileHelper from '../lib/filehelper'
+
 if(!ARTIST_PRIVATE_KEY) throw new Error('Missing ARTIST_PRIVATE_KEY')
 
 export type GenerateSignaturesInput = {
@@ -38,6 +40,9 @@ export function generateSignatures(args:string[]){
     let results =  generateSignaturesFromData(generationConfig);
 
     console.log(results)
+
+    let outputPath = 'tasks/output/generatedsignatures.json'
+    let saved = FileHelper.saveUTF8FileToCache(JSON.stringify(results), outputPath )
 
     return results 
 }
