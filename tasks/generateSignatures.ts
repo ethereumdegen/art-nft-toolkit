@@ -11,7 +11,7 @@ export type GenerateSignaturesInput = {
     artistPrivateKey: string,
     projectId: number,    
     chainId:number,
-    implementationContractAddress:string,
+    proxyContractAddress:string,
     quantity: number,
     startNonce: number 
 
@@ -23,7 +23,7 @@ const generationConfig:GenerateSignaturesInput = {
     artistPrivateKey: ARTIST_PRIVATE_KEY,
     projectId: 0, 
     chainId: 5,
-    implementationContractAddress: "0x1b14ad65ab27703f40291274c5fba7a1f443840d",
+    proxyContractAddress: "0x3c0d23ffab351f69116029f63919061e1ae9c142",
     quantity: 10,
     startNonce: 0 
 
@@ -56,12 +56,12 @@ export function generateSignatures(args:string[]){
         let projectId = input.projectId
         let nonce = input.startNonce + i ;
 
-        let implementationContractAddress = input.implementationContractAddress
+        let address = input.proxyContractAddress
         let chainId = input.chainId
 
         let artistWallet = new Wallet(input.artistPrivateKey)
 
-        let signatureResponse = generateArtSignature( artistWallet, {projectId,nonce}, chainId, implementationContractAddress)
+        let signatureResponse = generateArtSignature( artistWallet, {projectId,nonce}, chainId, address)
 
         if(signatureResponse.data){
                 outputs.push(

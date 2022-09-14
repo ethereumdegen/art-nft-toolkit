@@ -25,9 +25,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     //each nft tokenid will be  [this constant * artProjectId + tokenId]
     uint16 immutable MAX_PROJECT_QUANTITY = 10000;
 
-    bytes32 public immutable DOMAIN_SEPARATOR;
-
-    address public immutable IMPLEMENTATION_ADDRESS;
+   
 
     struct ArtProject {
         address artistAddress;
@@ -56,23 +54,17 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         _;
     }
 
-
-
-
+ 
     //see how artblocks uses name and sym
      constructor () public
         ERC721Upgradeable()
     {
          
-        IMPLEMENTATION_ADDRESS = address(this);
-        DOMAIN_SEPARATOR = makeDomainSeparator("UndergroundArt", "1.0");
-
-
+      
     }
 
 
     function initialize() public initializer {
-
 
         __Ownable_init();
         
@@ -80,27 +72,16 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     }
 
-
-    function getImplementationAddress() public view returns (address){
-        return IMPLEMENTATION_ADDRESS;
-    }
-
  
 
-    /**
-     * @notice Creates the domain separator for EIP712 signature verification.
-     * @param name The formal name for this contract.
-     * @param version The current version of this contract.
-     */
-    function makeDomainSeparator(string memory name, string memory version)
-        internal
+    function getDomainSeparator()
+     internal
         view
-        returns (bytes32)
-    {
-        uint256 chainId;
-        assembly {
-            chainId := chainid()
-        }
+        returns (bytes32){
+               uint256 chainId;
+                assembly {
+                    chainId := chainid()
+                }
  
 
         return
@@ -108,15 +89,16 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
                 abi.encode(
                     // keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")
                     0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
-                    keccak256(bytes(name)),
-                    keccak256(bytes(version)),
+                    keccak256(bytes("UndergroundArt")),
+                    keccak256(bytes("1.0")),
                     chainId,
-                    address(this)
+                    address(this) //proxy contract
                 )
             );
-    }
 
+        }
 
+   
 
 
     function defineProject (
@@ -238,7 +220,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         bytes32 typeHash = getTypeHash(projectId,nonce);
 
         bytes32 dataHash = keccak256(
-            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, typeHash)
+            abi.encodePacked("\x19\x01", getDomainSeparator(), typeHash)
         );
 
         return ECDSAUpgradeable.recover(  

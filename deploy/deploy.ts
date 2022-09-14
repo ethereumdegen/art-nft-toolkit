@@ -28,6 +28,12 @@ const deployOptions: DeployFunction = async (hre) => {
           methodName: 'initialize',
           args: [],
         },
+       /* onUpgrade: {
+          methodName: 'onUpgrade',
+          args: [
+           
+          ],
+        },*/
       },
     },
     hre, 

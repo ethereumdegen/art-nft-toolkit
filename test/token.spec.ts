@@ -97,7 +97,9 @@ describe('Upgrade Contract', () => {
     it('should mint a token', async () => { 
 
       let chainId = hre.network.config.chainId
-      let implementationContractAddress =  await artContract.getImplementationAddress()
+
+      let contractAddress = artContract.address
+     // let implementationContractAddress =  await artContract.getImplementationAddress()
 
  
       if(!chainId){
@@ -106,7 +108,7 @@ describe('Upgrade Contract', () => {
 
       let projectId = 0;
       let nonce = generateRandomNonce();
-      let signatureResponse = generateArtSignature( artist, {projectId,nonce}, chainId, implementationContractAddress)
+      let signatureResponse = generateArtSignature( artist, {projectId,nonce}, chainId, contractAddress)
       
       
       if(!signatureResponse.data){
@@ -125,7 +127,7 @@ describe('Upgrade Contract', () => {
       let typeHash = await artContract.getTypeHash(projectId,nonce);
       
 
-      let domainSeparator = await artContract['DOMAIN_SEPARATOR']();
+     // let domainSeparator = await artContract['DOMAIN_SEPARATOR']();
       
       let mint = await artContract.connect(minter).mintToken(
         projectId,
@@ -144,10 +146,10 @@ describe('Upgrade Contract', () => {
     it('should mint a token', async () => { 
 
       let chainId = hre.network.config.chainId
-      let implementationContractAddress =  await artContract.getImplementationAddress()
+      let contractAddress =  artContract.address
 
 
-      console.log({implementationContractAddress})
+      console.log({contractAddress})
 
       if(!chainId){
         throw new Error("ChainId undefined")
@@ -155,7 +157,7 @@ describe('Upgrade Contract', () => {
 
       let projectId = 0;
       let nonce = generateRandomNonce();
-      let signatureResponse = generateArtSignature( artist, {projectId,nonce}, chainId, implementationContractAddress)
+      let signatureResponse = generateArtSignature( artist, {projectId,nonce}, chainId, contractAddress)
 
       if(!signatureResponse.data){
         console.log(signatureResponse)
@@ -172,7 +174,7 @@ describe('Upgrade Contract', () => {
 
       let typeHash = await artContract.getTypeHash(projectId,nonce);
       
-      let domainSeparator = await artContract['DOMAIN_SEPARATOR']();
+     // let domainSeparator = await artContract['DOMAIN_SEPARATOR']();
        
       console.log({secretMessage})
 
