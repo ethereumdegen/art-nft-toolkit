@@ -1,31 +1,111 @@
 
 
+pragma solidity 0.8.9;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract UndergroundArt is ERC721 {
+
+// Libraries
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
+
+
+/*
+
+This contract should be deployed as a proxy but without a proxyadmin contract (see hardhat deploy doc )
+
+*/
+
+contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     //each nft tokenid will be  [this constant * artProjectId + tokenId]
     uint256 immutable MAX_PROJECT_QUANTITY = 10000;
 
-    
+    bytes32 public immutable DOMAIN_SEPARATOR;
+
+    string public contractName;
+    string public contractVersion; //used for offchain signature domain separator
+
+
 
     struct ArtProject {
         address artistAddress;
-        address adminAccountAddress;
         string metadataURI;
-        uint256 maxQuantity;  //must be less than or equal to MAX_PROJECT_QUANTITY   
-        uint256 quantityMinted;
-    }
+        uint256 totalSupply;  //must be less than or equal to MAX_PROJECT_QUANTITY   
+        uint256 mintedCount;
+    }   
+
+    event DefinedProject(uint256 indexed projectId, address artistAddress, uint256 totalSupply);
+
+    uint256 projectCount;
 
     // projectId => ArtProject
     mapping(uint256 => ArtProject) public artProjects;
 
 
-     constructor (string memory _name, string memory _symbol) public
-        ERC721(_name, _symbol)
+    //see how artblocks uses name and sym
+     constructor () public
+        ERC721Upgradeable()
     {
+
+        contractName = "UndergroundArt";
+        contractVersion = "1.0";  
+
+        DOMAIN_SEPARATOR = makeDomainSeparator(contractName, contractVersion);
+
+    }
+
+
+    /**
+     * @notice Creates the domain separator for EIP712 signature verification.
+     * @param name The formal name for this contract.
+     * @param version The current version of this contract.
+     */
+    function makeDomainSeparator(string memory name, string memory version)
+        internal
+        view
+        returns (bytes32)
+    {
+        uint256 chainId;
+        assembly {
+            chainId := chainid()
+        }
+        return
+            keccak256(
+                abi.encode(
+                    // keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")
+                    0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
+                    keccak256(bytes(name)),
+                    keccak256(bytes(version)),
+                    chainId,
+                    address(this)
+                )
+            );
+    }
+
+
+
+
+    function defineProject (
+        address _artistAddress,      
+        string memory _metadataURI,
+        uint256 _totalSupply
+    )  public onlyOwner {
+
+        artProjects[projectCount] = ArtProject({
+            artistAddress: _artistAddress,
+            metadataURI: _metadataURI,
+            totalSupply: _totalSupply,
+            mintedCount : 0
+        });
+
         
+
+        emit DefinedProject(projectCount, _artistAddress, _totalSupply);
+
+        projectCount +=1;
+
+
     }
 
    /**
@@ -35,13 +115,45 @@ contract UndergroundArt is ERC721 {
         address _to,
         uint256 _projectId,
         uint256 _nonce,
-        bytes32 _secretCode
+        bytes memory _secretCode
     ) public
     {   
+        uint256 _tokenId = (_projectId * MAX_PROJECT_QUANTITY) + artProjects[_projectId].mintedCount;
+
+        artProjects[_projectId].mintedCount += 1;
+
+        require(artProjects[_projectId].mintedCount <= artProjects[_projectId].totalSupply, "Total supply has been minted for this project.");
+
+
+        require(_validateSecretCode( artProjects[_projectId].artistAddress, _projectId, _nonce, _secretCode ));
 
         //make sure secret code ECrecovery of hash(projectId, nonce) == artist admin address  
-        super._mint(_to, _tokenId);
+        super._safeMint(_to, _tokenId);
        
+    }
+
+
+    function _validateSecretCode(
+        address signerAddress,
+        uint256 projectId,
+        uint256 nonce,
+        bytes memory signature
+    ) internal view returns (bool) {
+
+        bytes32 typeHash = keccak256( 
+                                abi.encode( keccak256(
+                                    "inputs(uint256 projectId, uint256 nonce)"
+                                ), 
+                                projectId, 
+                                nonce ) );
+
+        bytes32 dataHash = keccak256(
+            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, typeHash)
+        );
+
+        return ECDSAUpgradeable.recover(  
+            dataHash, signature
+        ) == signerAddress;
     }
 
 
