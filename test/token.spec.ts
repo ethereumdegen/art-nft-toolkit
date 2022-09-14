@@ -80,88 +80,10 @@ describe('Upgrade Contract', () => {
 
  
        
-      await originalTokenContract.connect(miner).mintTest()
-      let balance = await originalTokenContract.balanceOf(miner.address)
- 
-      expect(balance).to.eql( "5000000000" )
-
-      await originalTokenContract.connect(miner).approveAndCall(upgradeTokenContract.address, 9000, "0x")
-
-      let upgradeBalance = await upgradeTokenContract.balanceOf(miner.address)
- 
-      expect(upgradeBalance).to.eql( "9000" )
-
-      let depositedAmount = await upgradeTokenContract.amountDeposited( )
- 
-      expect(depositedAmount).to.eql( "9000" )
-
-
-      let totalSupply = await upgradeTokenContract.totalSupply( )
- 
-      expect(totalSupply).to.eql( "2100000000000000" )
-
-      let tokensMinted = await upgradeTokenContract.tokensMinted( )
- 
-      expect(tokensMinted).to.eql( "30000" )
-
-   
-      expect(await upgradeTokenContract.currentMiningReward( ))
-      .to.eql( "5000000000" )
- 
- 
-
-      let latestDiffStartedAt = await upgradeTokenContract.latestDifficultyPeriodStarted( )
-      expect(latestDiffStartedAt).to.eql( "1001" )
- 
-
+  
 
   })
-
-  it('should permit approve', async () => { 
-
-    
-   
-
-    let permitNonce = await upgradeTokenContract.nonces( miner.address )
-    expect(permitNonce).to.eql(0)
-
-    let permitNonceString = permitNonce.toString()
-
-    let approvalInputs :ApprovalInputs = {
-
-      spender: miner.address,
-      value: '10',
-      deadline:  (Date.now() + 80000).toString(),
-      permitNonce: permitNonceString
-
-    } 
-
-    let ethersNetwork = await ethers.provider.getNetwork()
-
-     
-    let domainData : DomainData = {
-      name: await upgradeTokenContract.name(),
-      version: await upgradeTokenContract.version(),
-      chainId: ethersNetwork.chainId,
-      resolverAddress: upgradeTokenContract.address
-    }
  
-    let permitInputs = await signPermitApproval( 
-      approvalInputs, domainData, permitter  )
- 
-    
-    await upgradeTokenContract.connect(miner).permit(
-      permitInputs.owner,
-      permitInputs.spender,
-      permitInputs.value,
-      permitInputs.deadline,
-      permitInputs.v,
-      permitInputs.r,
-      permitInputs.s 
-      ) 
-     
-
-  })
 
      
   
