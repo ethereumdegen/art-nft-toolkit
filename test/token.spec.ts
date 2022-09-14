@@ -9,7 +9,7 @@ import hre, { ethers, getNamedAccounts ,getNamedSigner} from 'hardhat'
 //import { deploy } from 'helpers/deploy-helpers'
 import { UndergroundArt } from '../generated/typechain'
 import { deploy } from '../helpers/deploy-helpers'
-import { generateArtSignature, generateRandomNonce } from './lib/art-signature-tools'
+import { generateArtSignature, generateRandomNonce } from '../lib/art-signature-tools'
 import { createAndFundRandomWallet } from './lib/test-utils' 
  
 

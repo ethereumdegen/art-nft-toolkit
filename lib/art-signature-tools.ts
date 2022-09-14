@@ -8,8 +8,7 @@ import {
     toRpcSig,
   } from 'ethereumjs-util'
   import { BigNumber, utils, Wallet } from 'ethers'
-import { getNetworkNameFromChainId } from './test-utils'
-
+ 
 
 const contractName = "UndergroundArt"
 const contractVersion = "1.0"
@@ -54,8 +53,7 @@ function getDomainData(chainId: number, verifyingContractAddress:string): Domain
         ]
       )
     )
-
-    console.log('sep',domainSeparator)
+ 
   
     const TypedDataEncoder = utils._TypedDataEncoder
   
@@ -92,9 +90,7 @@ export function generateArtSignature(wallet:Wallet, messageInputs: SignatureInpu
     const hashStruct = TypedDataEncoder.hashStruct('inputs', types, values)
       
 
-
-    console.log([domainData,digest,codedHash,hashStruct])
-    
+ 
 
     const msgBuffer = toBuffer(digest)
 

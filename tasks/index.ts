@@ -7,11 +7,8 @@ import { generateSignatures } from './generateSignatures'
  
 const taskMap: any = {
   
-  callExecute,
-  submitDiscrete,
-  acceptDiscrete,
-  fetchCraResponse,
-  approveMarket
+  generateSignatures,
+   
 //  matchOrder
 }
 
@@ -24,6 +21,7 @@ async function init(): Promise<void> {
 
 async function runTask(args: string[]): Promise<void> {
   const taskName = args[0]
+ 
 
   const taskMethod = taskMap[taskName]
 

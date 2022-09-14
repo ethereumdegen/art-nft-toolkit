@@ -140,7 +140,6 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     */
 
-
     function mintTokenFromSecretMessage( 
         bytes memory _secretMessage
     ) public
