@@ -543,8 +543,11 @@ task(
       if (DEBUG) {
         console.log('mnemonic', wallet.mnemonic.phrase)
         console.log('fullPath', wallet.mnemonic.path)
-        console.log('privateKey', wallet.privateKey)
+       
       }
+      console.log('address', wallet.address)
+      console.log('privateKey', wallet.privateKey)
+
 
       const qrcode = require('qrcode-terminal')
       qrcode.generate(wallet.address)

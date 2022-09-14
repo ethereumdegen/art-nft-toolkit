@@ -23,7 +23,7 @@ const generationConfig:GenerateSignaturesInput = {
     artistPrivateKey: ARTIST_PRIVATE_KEY,
     projectId: 0, 
     chainId: 5,
-    implementationContractAddress: "0x50D75C1BC6a1cE35002C9f92D0AF4B3684aa6B74",
+    implementationContractAddress: "0x1b14ad65ab27703f40291274c5fba7a1f443840d",
     quantity: 10,
     startNonce: 0 
 

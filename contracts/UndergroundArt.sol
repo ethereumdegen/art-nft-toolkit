@@ -9,14 +9,12 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./BytesLib.sol";
 // Libraries
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
-
-import "hardhat/console.sol";
+ 
 /*
 
 This contract should be deployed as a proxy 
 
-
-
+ 
 
 */
 
@@ -160,10 +158,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         }
 
         _signature = BytesLib.slice( _secretMessage, 4, 65 );
-        
-        console.logUint(_projectId);
-        console.logUint(_nonce); 
-        console.logBytes(_signature);      
+          
       
         mintTokenTo(msg.sender,_projectId,_nonce,_signature);
     }
