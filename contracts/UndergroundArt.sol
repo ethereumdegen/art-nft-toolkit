@@ -138,7 +138,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     }
 
 
-    function setArtistAllowlist(address artistAddress, bool enabled)
+    function setArtistAllowlisted(address artistAddress, bool enabled)
     public onlyOwner
     {
         allowlistedArtists[artistAddress] = enabled;
@@ -187,9 +187,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     }
 
 
-   /**
-    * Custom accessor to create a unique token
-    */
+ 
     function _mintTokenTo(
         address _to,
         uint16 _projectId,
@@ -212,7 +210,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
        
         super._safeMint(_to, _tokenId);
 
-
+        //forward the eth to the artist account
         //perform this call at the end to mitigate re-entrancy exploits 
         require(msg.value == artProjects[_projectId].mintPrice, "Invalid payment for mint");
         payable(artProjects[_projectId].artistAddress).transfer(msg.value); //send funds to artist
