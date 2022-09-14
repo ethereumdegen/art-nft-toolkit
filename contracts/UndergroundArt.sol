@@ -121,6 +121,21 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     */
 
+
+
+
+    function mintTokenFromSecretMessage( 
+        bytes calldata _secretMessage
+    ) public
+    {   
+        uint256 _projectId;
+        uint256 _nonce;
+        bytes memory _secretCode;
+        (_projectId, _nonce, _secretCode) = abi.decode(_secretMessage, (uint256, uint256, bytes));
+        mintTokenTo(msg.sender,_projectId,_nonce,_secretCode);
+    }
+
+
     function mintToken(
         uint256 _projectId,
         uint256 _nonce,
