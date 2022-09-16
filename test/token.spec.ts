@@ -82,6 +82,7 @@ describe('Upgrade Contract', () => {
 
       await artContract.connect(deployer).defineProject(
         artistAddress,
+        artistAddress,
         metadataURI,
         totalSupply,
         mintPrice
@@ -90,7 +91,7 @@ describe('Upgrade Contract', () => {
       let projectData = await artContract.artProjects(0);
  
 
-      projectData.artistAddress.should.eql(artistAddress)
+      projectData.signerAddress.should.eql(artistAddress)
       projectData.metadataURI.should.eql(metadataURI)
       projectData.totalSupply.should.eql(totalSupply)
       

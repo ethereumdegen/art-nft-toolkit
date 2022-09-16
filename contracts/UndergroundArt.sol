@@ -27,7 +27,8 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
 
     struct ArtProject {
-        address artistAddress;
+        address signerAddress;
+        address payoutAddress;
         string metadataURI;
         uint16 totalSupply;  //must be less than or equal to MAX_PROJECT_QUANTITY   
         uint16 mintedCount;
@@ -35,7 +36,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         bool reuseableCodes;
     }   
 
-    event DefinedProject(uint16 indexed projectId, address artistAddress, uint16 totalSupply, uint256 mintPrice, bool reuseableCodes);
+    event DefinedProject(uint16 indexed projectId, address signerAddress, address payoutAddress, uint16 totalSupply, uint256 mintPrice, bool reuseableCodes);
     event UpdatedMintPrice(uint16 indexed projectId, uint256 mintPrice);
     event UpdatedMetadataURI(uint16 indexed projectId);
     event UpdatedReuseableCodes(uint16 indexed projectId, bool reuseableCodes);
@@ -107,14 +108,16 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
 
     function defineProject (
-        address _artistAddress,      
+        address _signerAddress,  
+        address _payoutAddress,    
         string memory _metadataURI,
         uint16 _totalSupply,
         uint256 _mintPrice
-    )  public onlyOwnerOrSpecificArtist(_artistAddress) {
+    )  public onlyOwnerOrSpecificArtist(_signerAddress) {
 
         artProjects[projectCount] = ArtProject({
-            artistAddress: _artistAddress,
+            signerAddress: _signerAddress,
+            payoutAddress: _payoutAddress,
             metadataURI: _metadataURI,
             totalSupply: _totalSupply,
             mintedCount : 0,
@@ -122,7 +125,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
             reuseableCodes:false
         });
 
-        emit DefinedProject(projectCount, _artistAddress, _totalSupply, _mintPrice, reuseableCodes);
+        emit DefinedProject(projectCount, _signerAddress,_payoutAddress, _totalSupply, _mintPrice, false);
 
         projectCount +=1;
 
@@ -131,7 +134,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     function modifyProjectMetadata(
         uint16 _projectId,
         string memory _metadataURI
-    ) public onlyOwnerOrSpecificArtist(artProjects[_projectId].artistAddress) {
+    ) public onlyOwnerOrSpecificArtist(artProjects[_projectId].signerAddress) {
         artProjects[_projectId].metadataURI = _metadataURI;
     
         emit UpdatedMetadataURI(_projectId);
@@ -141,7 +144,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     function modifyProjectMintPrice(
         uint16 _projectId,
         uint256 _mintPrice
-    ) public onlyOwnerOrSpecificArtist(artProjects[_projectId].artistAddress) {
+    ) public onlyOwnerOrSpecificArtist(artProjects[_projectId].signerAddress) {
         artProjects[_projectId].mintPrice = _mintPrice;
 
         emit UpdatedMintPrice(_projectId, _mintPrice);
@@ -151,7 +154,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     function modifyProjectReuseableCodes(
         uint16 _projectId,
         bool _reuseableCodes
-    ) public onlyOwnerOrSpecificArtist(artProjects[_projectId].artistAddress) {
+    ) public onlyOwnerOrSpecificArtist(artProjects[_projectId].signerAddress) {
         artProjects[_projectId].reuseableCodes = _reuseableCodes;
     
         emit UpdatedReuseableCodes(_projectId,_reuseableCodes);
@@ -226,7 +229,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         usedSignatureHashes[keccak256(_signature)] = true;
 
         //make sure secret code ECrecovery of hash(projectId, nonce) == artist admin address  
-        require(_validateSecretCode( artProjects[_projectId].artistAddress, _projectId, _nonce, _signature ), "Signature invalid");
+        require(_validateSecretCode( artProjects[_projectId].signerAddress, _projectId, _nonce, _signature ), "Signature invalid");
         
        
         super._safeMint(_to, _tokenId);
@@ -234,7 +237,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         //forward the eth to the artist account
         //perform this call at the end to mitigate re-entrancy exploits 
         require(msg.value == artProjects[_projectId].mintPrice, "Invalid payment for mint");
-        payable(artProjects[_projectId].artistAddress).transfer(msg.value); //send funds to artist
+        payable(artProjects[_projectId].payoutAddress).transfer(msg.value); //send funds to artist
         
         emit MintToken(_to, _tokenId, _nonce);
     }
