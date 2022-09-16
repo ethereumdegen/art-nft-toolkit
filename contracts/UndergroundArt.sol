@@ -44,7 +44,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
 
     event AllowlistedArtist(address indexed artist, bool enabled);
     
-    event MintToken(address to, uint256 tokenId, uint16 nonceUsed);
+    event MintedToken(address to, uint256 tokenId, uint16 nonceUsed, bytes32 sigHash);
 
 
     // projectId => ArtProject
@@ -250,7 +250,7 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         require(msg.value == artProjects[_projectId].mintPrice, "Invalid payment for mint");
         payable(artProjects[_projectId].payoutAddress).transfer(msg.value); //send funds to artist
         
-        emit MintToken(_to, _tokenId, _nonce);
+        emit MintedToken(_to, _tokenId, _nonce,keccak256(_signature));
     }
 
     function signatureHasBeenUsed(
