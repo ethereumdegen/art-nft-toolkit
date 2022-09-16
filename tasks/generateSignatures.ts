@@ -23,7 +23,7 @@ export type GenerateSignaturesInput = {
 const generationConfig:GenerateSignaturesInput = {
 
     artistPrivateKey: ARTIST_PRIVATE_KEY,
-    projectId: 0, 
+    projectId: 3, 
     chainId: 5,
     proxyContractAddress: "0x3c0d23ffab351f69116029f63919061e1ae9c142",
     quantity: 10,
