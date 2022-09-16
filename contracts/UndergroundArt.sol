@@ -35,9 +35,10 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
         bool reuseableCodes;
     }   
 
-    event DefinedProject(uint16 indexed projectId, address artistAddress, uint16 totalSupply, uint256 mintPrice);
+    event DefinedProject(uint16 indexed projectId, address artistAddress, uint16 totalSupply, uint256 mintPrice, bool reuseableCodes);
     event UpdatedMintPrice(uint16 indexed projectId, uint256 mintPrice);
     event UpdatedMetadataURI(uint16 indexed projectId);
+    event UpdatedReuseableCodes(uint16 indexed projectId, bool reuseableCodes);
     
     event AllowlistedArtist(address indexed artist, bool enabled);
     
@@ -48,13 +49,10 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
     mapping(uint16 => ArtProject) public artProjects;
     mapping(bytes32 => bool) public usedSignatureHashes;
 
- 
     uint16 projectCount;
 
     mapping(address => bool) public allowlistedArtists;
-
-
-
+ 
 
     modifier onlyOwnerOrSpecificArtist(address artist){
          require(_msgSender() == owner() || (  allowlistedArtists[_msgSender()] && _msgSender() == artist) , "Ownable: caller is not the owner");
@@ -120,10 +118,11 @@ contract UndergroundArt is ERC721Upgradeable, OwnableUpgradeable {
             metadataURI: _metadataURI,
             totalSupply: _totalSupply,
             mintedCount : 0,
-            mintPrice: _mintPrice
+            mintPrice: _mintPrice,
+            reuseableCodes:false
         });
 
-        emit DefinedProject(projectCount, _artistAddress, _totalSupply, _mintPrice);
+        emit DefinedProject(projectCount, _artistAddress, _totalSupply, _mintPrice, reuseableCodes);
 
         projectCount +=1;
 
