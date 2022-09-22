@@ -18,7 +18,7 @@ const deployOptions: DeployFunction = async (hre) => {
  
    
   const artContract = await deploy({
-    contract: 'UndergroundArt',
+    contract: 'DetroitLocalArt',
     args: [ ],
     skipIfAlreadyDeployed: false,
     proxy: {

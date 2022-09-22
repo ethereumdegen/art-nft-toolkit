@@ -3,16 +3,18 @@ import chai, { expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
  
 import { BigNumber, utils, Wallet } from 'ethers'
+import { AbiCoder } from 'ethers/lib/utils'
 
 import hre, { ethers, getNamedAccounts ,getNamedSigner} from 'hardhat'
  
 //import { deploy } from 'helpers/deploy-helpers'
-import { UndergroundArt } from '../generated/typechain'
+import { DetroitLocalArt } from '../generated/typechain'
 import { deploy } from '../helpers/deploy-helpers'
 import { generateArtSignature, generateRandomNonce } from '../lib/art-signature-tools'
+import { calculateProjectIdHash, generateRandomProjectSeed } from './lib/local-art-utils'
 import { createAndFundRandomWallet } from './lib/test-utils' 
  
-
+const crypto = require('crypto')
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -23,7 +25,7 @@ const {   deployments } = hre
 interface SetupOptions {}
 
 interface SetupReturn {
-  artContract: UndergroundArt 
+  artContract: DetroitLocalArt 
 }
 
 const setup = deployments.createFixture<SetupReturn, SetupOptions>(
@@ -35,7 +37,7 @@ const setup = deployments.createFixture<SetupReturn, SetupOptions>(
     })
 
     const artContract = await hre.contracts
-    .get<UndergroundArt>('UndergroundArt')
+    .get<DetroitLocalArt>('DetroitLocalArt')
 
     return {
       artContract
@@ -47,11 +49,13 @@ const setup = deployments.createFixture<SetupReturn, SetupOptions>(
 
 describe('Upgrade Contract', () => {
 
-  let artContract: UndergroundArt 
+  let artContract: DetroitLocalArt 
   
   let deployer: Wallet
   let artist: Wallet 
   let minter: Wallet  
+
+  let projectSeed : string; 
 
     before(async () => {
       
@@ -79,16 +83,26 @@ describe('Upgrade Contract', () => {
       let metadataURI = "ipfs://"
       let totalSupply = 10
       let mintPrice = 0
+      projectSeed = generateRandomProjectSeed()
 
+      console.log({projectSeed}, projectSeed.length)
+      
       await artContract.connect(deployer).defineProject(
         artistAddress,
         artistAddress,
         metadataURI,
         totalSupply,
-        mintPrice
+        mintPrice,
+        utils.arrayify(projectSeed)
       )
 
-      let projectData = await artContract.artProjects(0);
+
+      //calc project id from inputs 
+      let projectId = calculateProjectIdHash( artistAddress,totalSupply,projectSeed  ) 
+
+      console.log({projectId})
+
+      let projectData = await artContract.artProjects(projectId);
  
 
       projectData.signerAddress.should.eql(artistAddress)
@@ -109,9 +123,14 @@ describe('Upgrade Contract', () => {
         throw new Error("ChainId undefined")
       }
 
-      let projectId = 0;
+      let artistAddress = await artist.getAddress()
+      let totalSupply = 10
+
+
+      let projectId = calculateProjectIdHash( artistAddress,totalSupply,projectSeed  ) 
+
       let nonce = generateRandomNonce();
-      let signatureResponse = generateArtSignature( artist, {projectId,nonce}, chainId, contractAddress)
+      let signatureResponse = generateArtSignature( artist, projectId, nonce, chainId, contractAddress)
       
       
       if(!signatureResponse.data){
@@ -128,6 +147,8 @@ describe('Upgrade Contract', () => {
 
 
       let typeHash = await artContract.getTypeHash(projectId,nonce);
+
+     // console.log({typeHash})
       
 
      // let domainSeparator = await artContract['DOMAIN_SEPARATOR']();
@@ -158,9 +179,16 @@ describe('Upgrade Contract', () => {
         throw new Error("ChainId undefined")
       }
 
-      let projectId = 0;
+      let artistAddress = await artist.getAddress()
+      let totalSupply = 10
+
+
+      let projectId = calculateProjectIdHash( artistAddress,totalSupply,projectSeed  ) 
+
+
+
       let nonce = generateRandomNonce();
-      let signatureResponse = generateArtSignature( artist, {projectId,nonce}, chainId, contractAddress)
+      let signatureResponse = generateArtSignature( artist, projectId,nonce, chainId, contractAddress)
 
       if(!signatureResponse.data){
         console.log(signatureResponse)
@@ -179,6 +207,10 @@ describe('Upgrade Contract', () => {
       
      // let domainSeparator = await artContract['DOMAIN_SEPARATOR']();
        
+
+     console.log({projectId})
+
+     console.log({nonce})
       console.log({secretMessage})
 
      /* const abiCoder = new utils.AbiCoder()
