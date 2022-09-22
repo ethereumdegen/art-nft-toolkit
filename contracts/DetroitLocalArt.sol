@@ -115,7 +115,7 @@ contract DetroitLocalArt is ERC721Upgradeable, OwnableUpgradeable {
         uint16 _totalSupply,
         uint256 _mintPrice,
         bytes32 _projectSeed
-    )  public onlyOwnerOrSpecificArtist(_artistAddress) {
+    )  public onlyOwnerOrSpecificArtist(_signerAddress) {
 
 
         bytes32 projectId = getProjectId( _signerAddress, _totalSupply, _projectSeed );
