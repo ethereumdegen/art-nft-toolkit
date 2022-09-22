@@ -179,11 +179,11 @@ describe('Upgrade Contract', () => {
         throw new Error("ChainId undefined")
       }
 
-      let artistAddress = await artist.getAddress()
+      let signerAddress = await artist.getAddress()
       let totalSupply = 10
 
 
-      let projectId = calculateProjectIdHash( artistAddress,totalSupply,projectSeed  ) 
+      let projectId = calculateProjectIdHash( signerAddress,totalSupply,projectSeed  ) 
 
 
 

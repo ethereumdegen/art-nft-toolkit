@@ -9,6 +9,7 @@ import {
   } from 'ethereumjs-util'
   import { BigNumber, utils, Wallet } from 'ethers'
  
+const crypto = require('crypto')
 
 const contractName = "DetroitLocalArt"
 const contractVersion = "1.0"
@@ -142,5 +143,20 @@ export function generateRandomNonce() : number {
 
 
     return Math.floor(Math.random()*65535)
+
+}
+
+
+export function generateRandomProjectSeed() : string {
+
+  return '0x'.concat(  crypto.randomBytes(32).toString('hex') )
+}
+
+export function calculateProjectIdHash(artistAddress:string, totalSupply:number, projectSeed:string) : string {
+
+
+  const abiCoder = new utils.AbiCoder()
+
+  return utils.keccak256(abiCoder.encode( ['address','uint16','bytes32'] , [artistAddress,totalSupply,utils.arrayify(projectSeed)]      ))
 
 }

@@ -2,11 +2,11 @@ import { Wallet } from "ethers";
 import { generateArtSignature, generateRandomNonce } from "../lib/art-signature-tools";
 
 require('dotenv').config()
-const ARTIST_PRIVATE_KEY = process.env.ARTIST_PRIVATE_KEY
+const ART_SIGNER_PRIVATE_KEY = process.env.ART_SIGNER_PRIVATE_KEY
  
 import FileHelper from '../lib/filehelper'
 
-if(!ARTIST_PRIVATE_KEY) throw new Error('Missing ARTIST_PRIVATE_KEY')
+if(!ART_SIGNER_PRIVATE_KEY) throw new Error('Missing ART_SIGNER_PRIVATE_KEY')
 
 export type GenerateSignaturesInput = {
 
@@ -22,7 +22,7 @@ export type GenerateSignaturesInput = {
 
 const generationConfig:GenerateSignaturesInput = {
 
-    artistPrivateKey: ARTIST_PRIVATE_KEY,
+    artistPrivateKey: ART_SIGNER_PRIVATE_KEY,
     projectId: 3, 
     chainId: 5,
     proxyContractAddress: "0x3c0d23ffab351f69116029f63919061e1ae9c142",

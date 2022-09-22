@@ -115,10 +115,10 @@ contract DetroitLocalArt is ERC721Upgradeable, OwnableUpgradeable {
         uint16 _totalSupply,
         uint256 _mintPrice,
         bytes32 _projectSeed
-    )  public  {
+    )  public onlyOwnerOrSpecificArtist(_artistAddress) {
 
 
-        bytes32 projectId = getProjectId( _artistAddress, _totalSupply, _projectSeed );
+        bytes32 projectId = getProjectId( _signerAddress, _totalSupply, _projectSeed );
 
         require(artProjects[projectId].signerAddress == address(0),'Art project id already registered');
 
@@ -194,9 +194,7 @@ contract DetroitLocalArt is ERC721Upgradeable, OwnableUpgradeable {
         bytes memory _secretMessage
     ) public payable
     {
-
-        console.log( _secretMessage.length );
-
+ 
         require (_secretMessage.length == 99,'signature length invalid');
 
         bytes32 _projectId;
