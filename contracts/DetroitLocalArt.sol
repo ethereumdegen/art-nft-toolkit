@@ -204,12 +204,12 @@ contract DetroitLocalArt is ERC721Upgradeable, OwnableUpgradeable {
     
 
         assembly {
-        _projectId := mload(add(_secretMessage, 0x20))
-        _nonce := mload(add(_secretMessage, 0x22))           
+        _projectId := mload(add(_secretMessage, 0x20)) //end at 32 bytes (256 bits) 
+        _nonce := mload(add(_secretMessage, 0x22))   //end at 34 bytes (256 + 8 bits)
         } 
            
 
-        _signature = BytesLib.slice( _secretMessage, 34, 65 );
+        _signature = BytesLib.slice( _secretMessage, 34, 65 ); //start at 34 bytes 
   
       
         _mintTokenTo(msg.sender,_projectId,_nonce,_signature);
