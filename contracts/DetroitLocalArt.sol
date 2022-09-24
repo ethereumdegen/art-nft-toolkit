@@ -141,10 +141,10 @@ contract DetroitLocalArt is ERC721Upgradeable, OwnableUpgradeable {
 
     }
 
-    function getProjectId(address artistAddress, uint16 totalSupply, bytes32 projectSeed) public returns (bytes32) {
+    function getProjectId(address signerAddress, uint16 totalSupply, bytes32 projectSeed) public returns (bytes32) {
         return keccak256(  
             abi.encode(
-                artistAddress,
+                signerAddress,
                 totalSupply,
                 projectSeed
             )
