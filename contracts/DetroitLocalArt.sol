@@ -61,8 +61,7 @@ contract DetroitLocalArt is ERC721Upgradeable, OwnableUpgradeable {
         _;
     }
 
- 
-    //see how artblocks uses name and sym
+  
      constructor () public
         ERC721Upgradeable()
     {
